@@ -3,7 +3,9 @@
 namespace frontend\controllers;
 
 use common\models\Book;
+use frontend\models\BookForm;
 use frontend\models\search\BookSearch;
+use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\filters\VerbFilter;
@@ -22,11 +24,26 @@ class BookController extends Controller
             parent::behaviors(),
             [
                 'verbs' => [
-                    'class' => VerbFilter::className(),
+                    'class' => VerbFilter::class,
                     'actions' => [
                         'delete' => ['POST'],
                     ],
                 ],
+                'access' => [
+                    'class' => AccessControl::class,
+                    'rules' => [
+                        [
+                            'actions' => ['create', 'update', 'delete'],
+                            'allow' => true,
+                            'roles' => ['@', '?'],
+                        ],
+                        [
+                            'actions' => ['index', 'view'],
+                            'allow' => true,
+                            'roles' => ['?'],
+                        ],
+                    ]
+                ]
             ]
         );
     }
@@ -67,14 +84,12 @@ class BookController extends Controller
      */
     public function actionCreate()
     {
-        $model = new Book();
+        $model = new BookForm();
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post()) && $model->save()) {
                 return $this->redirect(['view', 'id' => $model->id]);
             }
-        } else {
-            $model->loadDefaultValues();
         }
 
         return $this->render('create', [
@@ -91,7 +106,11 @@ class BookController extends Controller
      */
     public function actionUpdate($id)
     {
-        $model = $this->findModel($id);
+        $model = new BookForm();
+
+        if (!$model->initFormById($id)) {
+            throw new NotFoundHttpException('The requested page does not exist.');
+        }
 
         if ($this->request->isPost && $model->load($this->request->post()) && $model->save()) {
             return $this->redirect(['view', 'id' => $model->id]);

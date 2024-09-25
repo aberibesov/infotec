@@ -36,8 +36,8 @@ $this->params['breadcrumbs'][] = $this->title;
             'isbn',
             //'cover_image',
             [
-                'class' => ActionColumn::className(),
-                'urlCreator' => function ($action, Book $model, $key, $index, $column) {
+                'class' => ActionColumn::class,
+                'urlCreator' => static function ($action, Book $model, $key, $index, $column) {
                     return Url::toRoute([$action, 'id' => $model->id]);
                  }
             ],

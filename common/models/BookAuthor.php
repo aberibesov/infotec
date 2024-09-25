@@ -67,4 +67,29 @@ class BookAuthor extends \yii\db\ActiveRecord
     {
         return $this->hasOne(Book::class, ['id' => 'book_id']);
     }
+
+    /**
+     * @param $insert
+     * @param $changedAttributes
+     * @return void
+     */
+    public function afterSave($insert, $changedAttributes)
+    {
+        parent::afterSave($insert, $changedAttributes);
+
+        //помечаем записи, которые возьмем на отправку
+        Notification::updateAll(['status' => Notification::STATUS_SENT], ['author_id' => $this->author_id]);
+        $notifications = Notification::find()->where([
+            'author_id' => $this->author_id,
+            'status' => Notification::STATUS_SENT
+        ]);
+        $authorName = Author::find()
+            ->select('full_name')
+            ->where(['id' => $this->author_id])
+            ->scalar();
+        $text = 'Вышла новая книга у автора ' . $authorName;
+        foreach ($notifications as $notification) {
+            $notification->sendNotification($text);
+        }
+    }
 }

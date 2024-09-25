@@ -1,5 +1,7 @@
 <?php
 
+use common\models\Author;
+use kartik\select2\Select2;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 
@@ -20,7 +22,19 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'isbn')->textInput(['maxlength' => true]) ?>
 
-    <?= $form->field($model, 'cover_image')->textInput(['maxlength' => true]) ?>
+    <?php if ($model->cover_image): ?>
+        <img src="<?= '/covers/' . $model->cover_image ?>">
+    <?php endif; ?>
+
+    <?= $form->field($model, 'file')->fileInput(['max']) ?>
+
+    <?= $form->field($model, 'authors')->widget(Select2::class, [
+        'data' => Author::find()->select('full_name')->indexBy('id')->column(),
+        'options' => ['multiple' => true, 'placeholder' => 'Введите автора(ов)'],
+        'pluginOptions' => [
+            'allowClear' => true
+        ],
+    ]) ?>
 
     <div class="form-group">
         <?= Html::submitButton('Save', ['class' => 'btn btn-success']) ?>
